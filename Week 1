@@ -1,0 +1,141 @@
+// Week 1 version – main.cpp
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+
+using namespace std;
+
+class Student {
+public:
+    string indexNumber;
+    string name;
+
+    Student(string idx = "", string n = "") 
+        : indexNumber(idx), name(n) {}
+
+    void display() const {
+        cout << left << setw(15) << indexNumber << name << endl;
+    }
+};
+
+vector<Student> students;
+
+void loadStudents() {
+    ifstream inFile("students.txt");
+    if (!inFile) return;
+
+    string line;
+    while (getline(inFile, line)) {
+        if (line.empty()) continue;
+        size_t spacePos = line.find(' ');
+        if (spacePos == string::npos) continue;
+
+        string idx = line.substr(0, spacePos);
+        string nm  = line.substr(spacePos + 1);
+        students.emplace_back(idx, nm);
+    }
+    inFile.close();
+}
+
+void saveStudents() {
+    ofstream outFile("students.txt");
+    if (!outFile) {
+        cout << "Error: Cannot save students!\n";
+        return;
+    }
+    for (const auto& s : students) {
+        outFile << s.indexNumber << " " << s.name << endl;
+    }
+    outFile.close();
+}
+
+bool indexExists(const string& idx) {
+    for (const auto& s : students) {
+        if (s.indexNumber == idx) return true;
+    }
+    return false;
+}
+
+void registerStudent() {
+    string idx, name;
+    cout << "Enter index number: ";
+    getline(cin >> ws, idx);
+
+    if (indexExists(idx)) {
+        cout << "Error: Index number already exists!\n";
+        return;
+    }
+
+    cout << "Enter full name   : ";
+    getline(cin, name);
+
+    if (name.empty()) {
+        cout << "Name cannot be empty!\n";
+        return;
+    }
+
+    students.emplace_back(idx, name);
+    cout << "Student registered successfully.\n";
+}
+
+void viewAllStudents() {
+    if (students.empty()) {
+        cout << "No students registered yet.\n";
+        return;
+    }
+
+    cout << "\n" << left << setw(15) << "Index Number" << "Full Name\n";
+    cout << string(50, '-') << endl;
+
+    for (const auto& s : students) {
+        s.display();
+    }
+}
+
+void searchStudent() {
+    string idx;
+    cout << "Enter index number to search: ";
+    getline(cin >> ws, idx);
+
+    for (const auto& s : students) {
+        if (s.indexNumber == idx) {
+            cout << "\nFound:\n";
+            cout << left << setw(15) << "Index" << "Name\n";
+            cout << string(50, '-') << endl;
+            s.display();
+            return;
+        }
+    }
+    cout << "Student with index " << idx << " not found.\n";
+}
+
+int main() {
+    loadStudents();
+
+    int choice;
+    do {
+        cout << "\n=== Digital Attendance System (Week 1) ===\n"
+             << "1. Register new student\n"
+             << "2. View all students\n"
+             << "3. Search student by index\n"
+             << "0. Exit & Save\n"
+             << "Choice: ";
+
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1: registerStudent(); break;
+            case 2: viewAllStudents(); break;
+            case 3: searchStudent();   break;
+            case 0: cout << "Saving and exiting...\n"; break;
+            default: cout << "Invalid choice!\n";
+        }
+    } while (choice != 0);
+
+    saveStudents();
+    return 0;
+}
