@@ -1,0 +1,48 @@
+// ───────────────────────────────────────────────
+// Week 3 additions
+// ───────────────────────────────────────────────
+
+void markAttendance() {
+    if (!sessionActive) {
+        cout << "No active session. Create one first.\n";
+        return;
+    }
+
+    string idx;
+    cout << "\nEnter student index (or 'done' to finish): ";
+
+    while (getline(cin >> ws, idx)) {
+        if (idx == "done" || idx == "Done") break;
+
+        bool found = false;
+        for (auto& rec : currentSession.records) {
+            if (rec.indexNumber == idx) {
+                char ch;
+                cout << "Mark (P=Present, L=Late, A=Absent): ";
+                cin >> ch; cin.ignore();
+                ch = toupper(ch);
+
+                if (ch == 'P' || ch == 'L' || ch == 'A') {
+                    rec.status = ch;
+                    cout << "Updated.\n";
+                } else {
+                    cout << "Invalid choice. Keeping previous status.\n";
+                }
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            cout << "Index " << idx << " not found in this session.\n";
+        }
+
+        cout << "Next index (or 'done'): ";
+    }
+}
+
+// Add to main menu:
+             << "6. Mark attendance\n"
+
+// Add case 6:
+            case 6: markAttendance(); break;
