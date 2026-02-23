@@ -1,0 +1,78 @@
+// ───────────────────────────────────────────────
+// Week 4 – File handling for sessions
+// ───────────────────────────────────────────────
+
+void saveCurrentSession() {
+    if (!sessionActive) {
+        cout << "No active session to save.\n";
+        return;
+    }
+
+    string filename = "session_" + currentSession.courseCode + "_" 
+                    + currentSession.date + ".txt";
+
+    ofstream out(filename);
+    if (!out) {
+        cout << "Cannot create file: " << filename << endl;
+        return;
+    }
+
+    out << currentSession.courseCode << endl;
+    out << currentSession.date << endl;
+    out << currentSession.startTime << endl;
+    out << currentSession.duration << endl;
+
+    for (const auto& r : currentSession.records) {
+        out << r.indexNumber << " " << r.status << endl;
+    }
+
+    out.close();
+    cout << "Session saved to: " << filename << endl;
+    sessionActive = false;
+}
+
+bool loadSession(string course, string date) {
+    string filename = "session_" + course + "_" + date + ".txt";
+    ifstream in(filename);
+    if (!in) {
+        cout << "Session file not found: " << filename << endl;
+        return false;
+    }
+
+    getline(in, currentSession.courseCode);
+    getline(in, currentSession.date);
+    getline(in, currentSession.startTime);
+    in >> currentSession.duration; in.ignore();
+
+    currentSession.records.clear();
+    string line;
+    while (getline(in, line)) {
+        if (line.empty()) continue;
+        size_t sp = line.find(' ');
+        if (sp == string::npos) continue;
+        string idx = line.substr(0, sp);
+        char st = line.back();
+        if (st == 'P' || st == 'A' || st == 'L') {
+            currentSession.records.push_back({idx, st});
+        }
+    }
+    in.close();
+
+    sessionActive = true;
+    cout << "Session loaded successfully.\n";
+    return true;
+}
+
+// Add menu options:
+             << "7. Save current session\n"
+             << "8. Load previous session\n"
+
+// Add cases:
+            case 7: saveCurrentSession(); break;
+            case 8: {
+                string c, d;
+                cout << "Course code: "; getline(cin >> ws, c);
+                cout << "Date (YYYY-MM-DD): "; getline(cin, d);
+                loadSession(c, d);
+                break;
+            }
