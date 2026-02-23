@@ -1,0 +1,115 @@
+// ───────────────────────────────────────────────
+// Week 2 additions / changes (add below Student class)
+// ───────────────────────────────────────────────
+
+struct AttendanceRecord {
+    string indexNumber;
+    char status = 'A';  // A = Absent (default), P = Present, L = Late
+};
+
+class AttendanceSession {
+public:
+    string courseCode;
+    string date;        // YYYY-MM-DD
+    string startTime;   // HH:MM
+    int duration = 0;
+
+    vector<AttendanceRecord> records;
+
+    void showHeader() const {
+        cout << "\nCourse: " << courseCode 
+             << " | Date: " << date
+             << " | " << startTime << " (" << duration << " hrs)\n"
+             << string(65, '-') << endl;
+        cout << left << setw(18) << "Index" << "Status\n"
+             << string(65, '-') << endl;
+    }
+
+    void showSummary() const {
+        int p=0, a=0, l=0;
+        for (const auto& r : records) {
+            if (r.status == 'P') p++;
+            else if (r.status == 'L') l++;
+            else a++;
+        }
+        cout << "Present: " << p << " | Late: " << l << " | Absent: " << a 
+             << " | Total: " << records.size() << "\n\n";
+    }
+};
+
+AttendanceSession currentSession;
+bool sessionActive = false;
+
+// ───────────────────────────────────────────────
+// New functions
+// ───────────────────────────────────────────────
+
+void createNewSession() {
+    if (sessionActive) {
+        cout << "Active session exists. Finish/save it first.\n";
+        return;
+    }
+
+    cout << "Course code (e.g. EEE227): "; getline(cin >> ws, currentSession.courseCode);
+    cout << "Date (YYYY-MM-DD)      : "; getline(cin, currentSession.date);
+    cout << "Start time (HH:MM)     : "; getline(cin, currentSession.startTime);
+    cout << "Duration (hours)       : "; cin >> currentSession.duration; cin.ignore();
+
+    // Pre-fill with all students as Absent
+    currentSession.records.clear();
+    for (const auto& stu : students) {
+        currentSession.records.push_back({stu.indexNumber, 'A'});
+    }
+
+    sessionActive = true;
+    cout << "\nSession created. All students marked Absent by default.\n";
+}
+
+void showCurrentSession() {
+    if (!sessionActive) {
+        cout << "No active session.\n";
+        return;
+    }
+    currentSession.showHeader();
+    for (const auto& r : currentSession.records) {
+        string stat = (r.status == 'P') ? "Present" : (r.status == 'L') ? "Late" : "Absent";
+        cout << left << setw(18) << r.indexNumber << stat << endl;
+    }
+    currentSession.showSummary();
+}
+
+// ───────────────────────────────────────────────
+// Updated main menu (replace old menu)
+// ───────────────────────────────────────────────
+
+int main() {
+    loadStudents();
+
+    int choice;
+    do {
+        cout << "\n=== Digital Attendance System ===\n"
+             << "1. Register new student\n"
+             << "2. View all students\n"
+             << "3. Search student by index\n"
+             << "4. Create new lecture session\n"
+             << "5. Show current session\n"
+             << "0. Exit & Save\n"
+             << "Choice: ";
+
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1: registerStudent();      break;
+            case 2: viewAllStudents();      break;
+            case 3: searchStudent();        break;
+            case 4: createNewSession();     break;
+            case 5: showCurrentSession();   break;
+            case 0: cout << "Saving and exiting...\n"; break;
+            default: cout << "Invalid choice!\n";
+        }
+    } while (choice != 0);
+
+    saveStudents();
+    return 0;
+}
